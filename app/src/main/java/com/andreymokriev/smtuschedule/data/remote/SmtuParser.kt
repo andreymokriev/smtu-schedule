@@ -5,6 +5,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import com.andreymokriev.smtuschedule.data.model.*
+import java.util.Locale
 
 object SmtuParser {
 
@@ -83,11 +84,24 @@ object SmtuParser {
 
     private fun detectWeek(tr: Element, weekCell: Element): WeekType {
         val cls = weekCell.classNames()
-        val id = tr.id()
+        val rowId = tr.id()
         return when {
-            "text-success" in cls -> WeekType.UP
-            "text-warning" in cls -> WeekType.DOWN
-            id.contains("week-both") -> WeekType.BOTH
+            "text-success" in cls || rowId.contains("week-up") -> WeekType.UP
+            "text-warning" in cls || rowId.contains("week-down") -> WeekType.DOWN
+            "text-info" in cls || rowId.contains("week-both") -> WeekType.BOTH
+            else -> WeekType.UNKNOWN
+        }
+    }
+
+    /**
+     * Текущая неделя (верхняя/нижняя) из строки вида
+     * «Сегодня: 6 Октября 2026 года, Вторник, нижняя неделя».
+     */
+    fun parseCurrentWeek(dateInfo: String?): WeekType {
+        val lower = dateInfo?.lowercase(Locale.ROOT) ?: return WeekType.UNKNOWN
+        return when {
+            "верхняя неделя" in lower -> WeekType.UP
+            "нижняя неделя" in lower -> WeekType.DOWN
             else -> WeekType.UNKNOWN
         }
     }

@@ -10,14 +10,16 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.andreymokriev.smtuschedule.data.model.DayStatus
 import com.andreymokriev.smtuschedule.ui.components.LessonCard
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +40,10 @@ fun ScheduleScreen(
                     }
                 },
                 actions = {
+                    WeekFilterMenu(
+                        selected = state.weekFilter,
+                        onSelect = { vm.setWeekFilter(it) }
+                    )
                     IconButton(onClick = { vm.load(force = true) }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Обновить")
                     }
@@ -54,13 +60,14 @@ fun ScheduleScreen(
                         color = MaterialTheme.colorScheme.error)
                 state.schedule != null -> {
                     val schedule = state.schedule!!
+                    val days = vm.filteredDays(schedule, state.weekFilter)
                     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
                         schedule.dateInfo?.let {
                             item { Text(it, Modifier.padding(vertical = 8.dp),
                                 style = MaterialTheme.typography.bodyMedium) }
                         }
                         val todayName = todayRussianName()
-                        schedule.days.forEach { day ->
+                        days.forEach { day ->
                             item {
                                 Text(
                                     text = day.dayName + if (day.dayName == todayName) " • сегодня" else "",
@@ -83,6 +90,42 @@ fun ScheduleScreen(
                         item { Spacer(Modifier.height(24.dp)) }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeekFilterMenu(
+    selected: WeekFilter,
+    onSelect: (WeekFilter) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        TextButton(onClick = { expanded = true }) {
+            Text(selected.label, style = MaterialTheme.typography.labelLarge)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            WeekFilter.entries.forEach { filter ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            filter.label,
+                            color = if (filter == selected)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                        )
+                    },
+                    onClick = {
+                        onSelect(filter)
+                        expanded = false
+                    }
+                )
             }
         }
     }
