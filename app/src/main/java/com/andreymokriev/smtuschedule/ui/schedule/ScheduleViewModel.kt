@@ -36,8 +36,9 @@ data class ScheduleUiState(
 
 class ScheduleViewModel(
     private val repo: ScheduleRepository,
-    private val pageId: Int,
-    private val groupName: String,
+    private val id: Int,
+    private val title: String,
+    private val isTeacher: Boolean = false,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ScheduleUiState())
@@ -50,7 +51,8 @@ class ScheduleViewModel(
         _state.value = _state.value.copy(loading = true, error = null)
         viewModelScope.launch {
             try {
-                val data = repo.getSchedule(pageId, forceRefresh = force)
+                val data = if (isTeacher) repo.getTeacherSchedule(id, forceRefresh = force)
+                else repo.getSchedule(id, forceRefresh = force)
                 _state.value = ScheduleUiState(
                     loading = false,
                     schedule = data,

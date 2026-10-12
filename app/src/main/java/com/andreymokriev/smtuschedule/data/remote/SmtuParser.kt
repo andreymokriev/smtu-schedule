@@ -7,6 +7,14 @@ import org.jsoup.nodes.Element
 import com.andreymokriev.smtuschedule.data.model.*
 import java.util.Locale
 
+/**
+ * Найденный через поиск преподаватель.
+ */
+data class TeacherRef(
+    val name: String,      // «Кайнова Татьяна Денисовна»
+    val teacherId: Int,    // 106561, страница /ru/viewschedule_new/teacher/106561/
+)
+
 object SmtuParser {
 
     private const val BASE = "https://www.smtu.ru"
@@ -105,6 +113,40 @@ object SmtuParser {
             else -> WeekType.UNKNOWN
         }
     }
+
+    /**
+     * Извлекает одноразовый ключ формы поиска (hidden-поле search_key,
+     * PHP uniqid), выдаваемый страницей /ru/searchschedule/.
+     */
+    fun extractSearchKey(seedHtml: String): String? {
+        val doc = Jsoup.parse(seedHtml)
+        return doc.selectFirst("form.schedule-search-form input[name=search_key]")
+            ?.attr("value")
+            ?.takeIf { it.isNotBlank() }
+            ?: Regex("name=\"search_key\" value=\"([a-f0-9]+)\"").find(seedHtml)
+                ?.groupValues?.get(1)
+    }
+
+    /**
+     * Разбирает HTML ответа на поиск преподавателя.
+     * Результаты: <ul class="schedule-search-results"><li><a
+     * href="/ru/viewschedule_new/teacher/106561/">ФИО</a></li>...</ul>
+     */
+    fun parseTeacherSearch(html: String): List<TeacherRef> {
+        val doc = Jsoup.parse(html)
+        return doc.select("ul.schedule-search-results a[href]").mapNotNull { a ->
+            val m = Regex("""/viewschedule_new/teacher/(\d+)/?""").find(a.attr("href"))
+                ?: return@mapNotNull null
+            val name = a.text().replace(Regex("\\s+"), " ").trim()
+            if (name.isEmpty()) null else TeacherRef(name, m.groupValues[1].toInt())
+        }
+    }
+
+    /** URL страницы расписания преподавателя (id — из ссылки результатов поиска). */
+    fun buildTeacherScheduleUrl(teacherId: Int, week: String = "all", view: String = "table"): String =
+        "$BASE/ru/viewschedule_new/teacher/$teacherId/?week=$week&view_mode=$view"
+
+    fun teacherSearchUrl(): String = "$BASE/ru/searchschedule/"
 
     fun buildScheduleUrl(pageId: Int, week: String = "all", view: String = "table"): String =
         "$BASE/ru/viewschedule_new/$pageId/?week=$week&view_mode=$view"

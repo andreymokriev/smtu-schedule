@@ -7,6 +7,7 @@ import com.andreymokriev.smtuschedule.data.local.*
 import com.andreymokriev.smtuschedule.data.model.*
 import com.andreymokriev.smtuschedule.data.remote.SmtuApi
 import com.andreymokriev.smtuschedule.data.remote.SmtuParser
+import com.andreymokriev.smtuschedule.data.remote.TeacherRef
 
 class ScheduleRepository(
     private val api: SmtuApi,
@@ -27,6 +28,32 @@ class ScheduleRepository(
         if (cached.isNotEmpty()) cached.map { GroupRef(it.name, it.pageId) }
         else refreshGroups()
     }
+
+    /**
+     * Поиск преподавателей по фамилии через сайт.
+     * Разворачивает «нет результатов» с ошибкой в пустой список.
+     */
+    suspend fun searchTeachers(surname: String): List<TeacherRef> = withContext(Dispatchers.IO) {
+        val html = api.searchTeachersHtml(surname.trim())
+        SmtuParser.parseTeacherSearch(html)
+    }
+
+    /** Расписание преподавателя; страница устроена так же, как у группы,
+     *  поэтому парсинг и кэш переиспользуются. Ключ кэша — teacherId,
+     *  он не пересекается с pageId групп. */
+    suspend fun getTeacherSchedule(teacherId: Int, forceRefresh: Boolean = false, maxAgeMs: Long = 30 * 60_000): GroupSchedule =
+        withContext(Dispatchers.IO) {
+            if (!forceRefresh) {
+                val cached = scheduleDao.get(teacherId)
+                if (cached != null && System.currentTimeMillis() - cached.parsedAt < maxAgeMs) {
+                    return@withContext deserialize(cached)
+                }
+            }
+            val html = api.fetchTeacherScheduleHtml(teacherId)
+            val parsed = SmtuParser.parseSchedule(teacherId, html)
+            scheduleDao.put(serialize(parsed))
+            parsed
+        }
 
     suspend fun getSchedule(pageId: Int, forceRefresh: Boolean = false, maxAgeMs: Long = 30 * 60_000): GroupSchedule =
         withContext(Dispatchers.IO) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun GroupPickerScreen(
     vm: GroupPickerViewModel,
     onGroupSelected: (String, Int) -> Unit,
+    onTeacherSearch: () -> Unit,
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
 
@@ -28,6 +30,9 @@ fun GroupPickerScreen(
             TopAppBar(
                 title = { Text("Выбор группы") },
                 actions = {
+                    IconButton(onClick = onTeacherSearch) {
+                        Icon(Icons.Default.PersonSearch, contentDescription = "Поиск преподавателя")
+                    }
                     IconButton(onClick = { vm.load(force = true) }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Обновить")
                     }

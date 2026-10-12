@@ -25,7 +25,7 @@ import java.util.Calendar
 @Composable
 fun ScheduleScreen(
     vm: ScheduleViewModel,
-    groupName: String,
+    title: String,
     onBack: () -> Unit,
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
@@ -33,7 +33,7 @@ fun ScheduleScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Группа $groupName") },
+                title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -60,6 +60,16 @@ fun ScheduleScreen(
                         color = MaterialTheme.colorScheme.error)
                 state.schedule != null -> {
                     val schedule = state.schedule!!
+                    if (schedule.days.isEmpty()) {
+                        // Страница скачалась, но без карточек дней: некорректный id
+                        // (например, teacher/0 из-за ошибки навигации) или расписание
+                        // ещё не опубликовано. Показываем сообщение, а не пустоту.
+                        Text(
+                            "Расписание не найдено — попробуйте обновить (↻)",
+                            Modifier.align(Alignment.Center).padding(16.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
                     val days = vm.filteredDays(schedule, state.weekFilter)
                     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
                         schedule.dateInfo?.let {
@@ -89,6 +99,7 @@ fun ScheduleScreen(
                         }
                         item { Spacer(Modifier.height(24.dp)) }
                     }
+                    } // else days.isNotEmpty
                 }
             }
         }
