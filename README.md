@@ -4,6 +4,7 @@
 ## Что умеет
 
 - Выбор группы из списка всех факультетов
+- Поиск расписания преподавателя 
 - Расписание на неделю
 - Расписание последней группы открывается мгновенно при повторном запуске
 - Обновление одной кнопкой
@@ -11,8 +12,9 @@
 ## Скриншоты
 
 <p align="center">
-  <img src="screenshots/1-picker.png" width="220" alt="Выбор группы">
-  <img src="screenshots/2-schedule.png" width="220" alt="Расписание">
+  <img src="screenshots/1-picker.jpg" width="220" alt="Выбор группы">
+  <img src="screenshots/2-schedule.jpg" width="220" alt="Расписание">
+  <img src="screenshots/3-person.jpg" width="220" alt="Поиск преподавателя">
 </p>
 
 ## Установка
