@@ -10,7 +10,7 @@ import com.andreymokriev.smtuschedule.data.model.Lesson
 import com.andreymokriev.smtuschedule.data.model.WeekType
 
 @Composable
-fun LessonCard(lesson: Lesson) {
+fun LessonCard(lesson: Lesson, showGroup: Boolean = false) {
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Column(Modifier.padding(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -32,6 +32,9 @@ fun LessonCard(lesson: Lesson) {
             }
             Spacer(Modifier.height(4.dp))
             Text("🚪 ${lesson.room}", style = MaterialTheme.typography.bodyMedium)
+            if (showGroup && lesson.group.isNotBlank()) {
+                Text("👥 ${lesson.group}", style = MaterialTheme.typography.bodyMedium)
+            }
             if (lesson.teacher.isNotBlank()) {
                 Text("👤 ${lesson.teacher}", style = MaterialTheme.typography.bodyMedium)
             }

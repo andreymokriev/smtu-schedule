@@ -140,7 +140,10 @@ private fun ScheduleRoute(
             ScheduleViewModel(repo, id, title, isTeacher)
         }
     )
-    ScheduleScreen(vm, title) {
-        nav.popBackStack()
-    }
+    ScheduleScreen(
+        vm = vm,
+        title = title,
+        showGroup = isTeacher,
+        onBack = { nav.popBackStack() },
+    )
 }

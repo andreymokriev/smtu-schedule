@@ -1,6 +1,8 @@
 // ui/group/GroupPickerScreen.kt
 package com.andreymokriev.smtuschedule.ui.group
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,9 +14,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.andreymokriev.smtuschedule.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+
+private const val GITHUB_URL = "https://github.com/andreymokriev/smtu-schedule"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,12 +31,23 @@ fun GroupPickerScreen(
     onTeacherSearch: () -> Unit,
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Выбор группы") },
                 actions = {
+                    IconButton(onClick = {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_URL))
+                        )
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_github),
+                            contentDescription = "GitHub проекта"
+                        )
+                    }
                     IconButton(onClick = onTeacherSearch) {
                         Icon(Icons.Default.PersonSearch, contentDescription = "Поиск преподавателя")
                     }

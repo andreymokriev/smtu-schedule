@@ -26,6 +26,7 @@ import java.util.Calendar
 fun ScheduleScreen(
     vm: ScheduleViewModel,
     title: String,
+    showGroup: Boolean = false,
     onBack: () -> Unit,
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
@@ -94,7 +95,7 @@ fun ScheduleScreen(
                                     Text("Нет занятий",
                                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                DayStatus.OK -> items(day.lessons) { LessonCard(it) }
+                                DayStatus.OK -> items(day.lessons) { LessonCard(it, showGroup = showGroup) }
                             }
                         }
                         item { Spacer(Modifier.height(24.dp)) }

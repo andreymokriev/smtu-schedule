@@ -21,7 +21,9 @@ object SmtuParser {
 
     fun parseGroups(html: String): List<GroupRef> {
         val doc: Document = Jsoup.parse(html)
-        return doc.select("div.gr a").mapNotNull { a ->
+        // Актуальная разметка — a.schedule-group-link в ul.schedule-group-list;
+        // div.gr a оставлен как запасной вариант для старой версии страницы.
+        return doc.select("a.schedule-group-link[href], div.gr a[href]").mapNotNull { a ->
             val href = a.attr("href")
             val m = Regex("""/viewschedule_new/(\d+)/?""").find(href) ?: return@mapNotNull null
             val name = a.text().trim()
